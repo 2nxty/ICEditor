@@ -1,1 +1,501 @@
-hi
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icarus Profile/Currency Editor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: url('img/bg.jpg') center/cover no-repeat fixed;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            position: relative;
+            background-attachment: fixed;
+        }
+
+        /* Overlay escuro para deixar a imagem de fundo mais escura */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.55); /* Escurece a imagem de fundo */
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: transparent;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .language-switcher {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            font-size: 32px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        .lang-btn:hover {
+            opacity: 1;
+            transform: scale(1.15);
+        }
+
+        .lang-btn.active {
+            opacity: 1;
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.7));
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b35;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+        }
+
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-size: 15px;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
+        }
+
+        .tutorial {
+            background: rgba(25, 25, 35, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0 40px;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .tutorial h3 {
+            margin-top: 0;
+            color: #ff6b35;
+        }
+
+        .path {
+            background: rgba(10, 10, 15, 0.8);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0px 0;
+        }
+
+        /* Textarea dentro das dimensões do container */
+        #json-input {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            height: 180px;
+            background: rgba(25, 25, 35, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 30px;
+            transition: height 0.4s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        #json-input.filled {
+            height: 80px;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .resource-item {
+            background: rgba(25, 25, 35, 0.7);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 140px;
+            justify-content: space-between;
+        }
+
+        .resource-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .resource-icon {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resource-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        .resource-name {
+            font-size: 17px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        .resource-input {
+            width: 160px;
+            padding: 12px 16px;
+            font-size: 18px;
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .resource-input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        @media (max-width: 600px) {
+            .resource-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            .resource-item {
+                padding: 16px;
+                min-height: 120px;
+            }
+            .resource-icon {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 10px;
+            }
+            .resource-input {
+                width: 140px;
+                padding: 10px 14px;
+                font-size: 17px;
+            }
+        }
+
+        .buttons {
+            text-align: center;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 36px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #ff6b35;
+            color: #0f0f14;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ff855a;
+        }
+
+        #json-output {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            height: 300px;
+            margin-top: 40px;
+            background: rgba(25, 25, 35, 0.7);
+            color: #88ff88;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow-x: auto;
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Selector de idioma -->
+        <div class="language-switcher">
+            <span class="lang-btn active" id="flag-br" title="Português">🇧🇷</span>
+            <span class="lang-btn" id="flag-us" title="English">🇺🇸</span>
+        </div>
+
+        <h1 id="title">Icarus Editor</h1>
+        <p class="info" id="info">Modifique suas moedas do jogo. Simples e fácil.</p>
+
+        <div class="tutorial" id="tutorial">
+            <h3 id="tutorial-title">Como encontrar o seu Profile.json</h3>
+            <p id="tutorial-text">1. Feche o jogo Icarus completamente.<br>
+            2. Pressione <strong>Windows + R</strong>, digite <code>%localappdata%</code> e pressione Enter.<br>
+            3. Navegue até a pasta: <strong>Icarus → Saved → PlayerData</strong><br>
+            4. Dentro de PlayerData, haverá uma pasta com o seu <strong>SteamID</strong> (um número longo, ex: 7656119xxxxxxxxxx).<br>
+            5. Abra essa pasta e copie o conteúdo do arquivo <strong>Profile.json</strong>.</p>
+            <p><strong>Windows + R</strong>:</p><div class="path">%localappdata%\Icarus\Saved\PlayerData\</div>
+            <!--p id="tutorial-tip"><strong>Dica:</strong> Faça um backup do arquivo antes de editar!</p-->
+        </div>
+
+        <textarea id="json-input" placeholder="Cole aqui o conteúdo completo do seu Profile.json"></textarea>
+
+        <div class="resource-grid" id="resource-list"></div>
+
+        <div class="buttons">
+            <button onclick="updateJson()" id="btn-update">Atualizar JSON</button>
+            <button onclick="downloadJson()" id="btn-download">Baixar Profile.json</button>
+        </div>
+
+        <pre id="json-output"></pre>
+    </div>
+
+    <script>
+        // === TRADUÇÕES ===
+        const translations = {
+            pt: {
+                title: "Icarus Editor",
+                info: "Modifique suas moedas do jogo. Simples e fácil.",
+                tutorialTitle: "Como encontrar o seu Profile.json",
+                tutorialText: "1. Feche o jogo Icarus completamente.<br>" +
+                              "2. Pressione <strong>Windows + R</strong>, digite <code>%localappdata%</code> e pressione Enter.<br>" +
+                              "3. Navegue até a pasta: <strong>Icarus → Saved → PlayerData</strong><br>" +
+                              "4. Dentro de PlayerData, haverá uma pasta com o seu <strong>SteamID</strong> (um número longo, ex: 7656119xxxxxxxxxx).<br>" +
+                              "5. Abra essa pasta e copie o conteúdo do arquivo <strong>Profile.json</strong>.",
+                tutorialTip: "<strong>Dica:</strong> Faça um backup do arquivo antes de editar!",
+                placeholder: "Cole aqui o conteúdo completo do seu Profile.json",
+                btnUpdate: "Atualizar JSON",
+                btnDownload: "Baixar Profile.json",
+                invalidJson: "JSON inválido!",
+                pasteValidJson: "Cole um JSON válido primeiro!",
+                jsonUpdated: "JSON atualizado com sucesso!"
+            },
+            en: {
+                title: "Icarus Editor",
+                info: "Modify your in-game currency. Simple and easy.",
+                tutorialTitle: "How to find your Profile.json",
+                tutorialText: "1. Completely close the Icarus game.<br>" +
+                              "2. Press <strong>Windows + R</strong>, type <code>%localappdata%</code> and press Enter.<br>" +
+                              "3. Navigate to the folder: <strong>Icarus → Saved → PlayerData</strong><br>" +
+                              "4. Inside PlayerData, there will be a folder with your <strong>SteamID</strong> (a long number, e.g.: 7656119xxxxxxxxxx).<br>" +
+                              "5. Open that folder and copy the contents of the <strong>Profile.json</strong> file.",
+                tutorialTip: "<strong>Tip:</strong> Make a backup of the file before editing!",
+                placeholder: "Paste here the full content of your Profile.json",
+                btnUpdate: "Update JSON",
+                btnDownload: "Download Profile.json",
+                invalidJson: "Invalid JSON!",
+                pasteValidJson: "Paste a valid JSON first!",
+                jsonUpdated: "JSON updated successfully!"
+            }
+        };
+
+        // Ícones
+        const icons = {
+            "Credits":      "icons/Credits.png",
+            "Refund":       "icons/Refund.png",
+            "Exotic1":      "icons/Exotic1.png",
+            "Exotic_Red":   "icons/Exotic_Red.png",
+            "Biomass":      "icons/Biomass.png",
+            "Licence":      "icons/Licence.png"
+        };
+
+        // Nomes dos recursos
+        const resourceNames = {
+            pt: {
+                "Credits":      "Créditos",
+                "Refund":       "Pontos de Reembolso",
+                "Exotic1":      "Exóticas",
+                "Exotic_Red":   "Exóticas Vermelhas",
+                "Biomass":      "Biomassa",
+                "Licence":      "Licenças"
+            },
+            en: {
+                "Credits":      "Credits",
+                "Refund":       "Refund Points",
+                "Exotic1":      "Exotics",
+                "Exotic_Red":   "Red Exotics",
+                "Biomass":      "Biomass",
+                "Licence":      "Licences"
+            }
+        };
+
+        const resourcesOrder = [
+            { key: "Credits" },
+            { key: "Refund" },
+            { key: "Exotic1" },
+            { key: "Exotic_Red" },
+            { key: "Biomass" },
+            { key: "Licence" }
+        ];
+
+        let currentLang = 'pt';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            document.getElementById('flag-br').classList.toggle('active', lang === 'pt');
+            document.getElementById('flag-us').classList.toggle('active', lang === 'en');
+
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('info').innerHTML = t.info;
+            document.getElementById('tutorial-title').textContent = t.tutorialTitle;
+            document.getElementById('tutorial-text').innerHTML = t.tutorialText;
+            //document.getElementById('tutorial-tip').innerHTML = t.tutorialTip;
+            document.getElementById('json-input').placeholder = t.placeholder;
+            document.getElementById('btn-update').textContent = t.btnUpdate;
+            document.getElementById('btn-download').textContent = t.btnDownload;
+
+            renderResources();
+        }
+
+        document.getElementById('flag-br').addEventListener('click', () => setLanguage('pt'));
+        document.getElementById('flag-us').addEventListener('click', () => setLanguage('en'));
+
+        let profileData = null;
+
+        function ensureAllResources() {
+            if (!profileData.MetaResources) {
+                profileData.MetaResources = [];
+            }
+
+            resourcesOrder.forEach(res => {
+                const exists = profileData.MetaResources.some(m => m.MetaRow === res.key);
+                if (!exists) {
+                    profileData.MetaResources.push({ MetaRow: res.key, Count: 0 });
+                }
+            });
+        }
+
+        const jsonInput = document.getElementById('json-input');
+        jsonInput.addEventListener('input', () => {
+            const text = jsonInput.value.trim();
+
+            if (text.length > 0) {
+                jsonInput.classList.add('filled');
+            } else {
+                jsonInput.classList.remove('filled');
+            }
+
+            if (!text) {
+                profileData = null;
+                document.getElementById('resource-list').innerHTML = '';
+                return;
+            }
+
+            try {
+                profileData = JSON.parse(text);
+                ensureAllResources();
+                renderResources();
+            } catch (e) {
+                profileData = null;
+                const t = translations[currentLang];
+                document.getElementById('resource-list').innerHTML = 
+                    `<p style="color:#ff4444; text-align:center; grid-column: 1 / -1;">${t.invalidJson}</p>`;
+            }
+        });
+
+        function renderResources() {
+            if (!profileData) return;
+
+            const grid = document.getElementById('resource-list');
+            grid.innerHTML = '';
+
+            resourcesOrder.forEach(res => {
+                const meta = profileData.MetaResources.find(m => m.MetaRow === res.key);
+                const count = meta ? meta.Count : 0;
+                const iconPath = icons[res.key] || 'fallback.png';
+                const resourceName = resourceNames[currentLang][res.key];
+
+                const item = document.createElement('div');
+                item.className = 'resource-item';
+
+                item.innerHTML = `
+                    <div class="resource-top">
+                        <div class="resource-icon">
+                            <img src="${iconPath}" alt="${resourceName}" onerror="this.src='https://via.placeholder.com/72?text=?';">
+                        </div>
+                        <div class="resource-name">${resourceName}</div>
+                    </div>
+                    <input type="number" class="resource-input" data-key="${res.key}" value="${count}" min="0" max="999999999">
+                `;
+
+                grid.appendChild(item);
+            });
+        }
+
+        function updateJson() {
+            if (!profileData) {
+                const t = translations[currentLang];
+                return alert(t.pasteValidJson);
+            }
+
+            document.querySelectorAll('.resource-input').forEach(input => {
+                const key = input.dataset.key;
+                const value = Math.max(0, parseInt(input.value) || 0);
+                const meta = profileData.MetaResources.find(m => m.MetaRow === key);
+                if (meta) {
+                    meta.Count = value;
+                }
+            });
+
+            const output = JSON.stringify(profileData, null, 4);
+            document.getElementById('json-output').textContent = output;
+
+            const t = translations[currentLang];
+            //alert(t.jsonUpdated);
+        }
+
+        function downloadJson() {
+            updateJson();
+            if (!profileData) return;
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profileData, null, 4));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", "Profile.json");
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+    </script>
+</body>
+</html>
