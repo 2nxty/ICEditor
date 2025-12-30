@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Icarus Profile/Currency Editor</title>
+    <meta name="description" content="Free editor for Icarus game currencies and resources. Easily modify Credits, Exotics, Biomass and more. Safe and simple tool.">
+    <meta name="keywords" content="Icarus editor, Icarus currency editor, Icarus Profile.json editor, Icarus MetaResources, Icarus cheats, Icarus resources editor, Icarus offline editor, Icarus Ren, Icarus Credits, Icarus Exotics">
+    <meta name="author" content="nxty.cc">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    
+    <meta property="og:title" content="Icarus Currency Editor">
+    <meta property="og:description" content="Free offline tool to safely edit Credits, Exotics, Biomass and other currencies in Icarus">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://icarus.nxty.cc/"> 
+    <meta property="og:image" content="preview.jpg"> 
+
+    <title id="page-title">Icarus Currency Editor</title>
     <style>
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
@@ -15,12 +27,11 @@
             background-attachment: fixed;
         }
 
-        /* Overlay escuro para deixar a imagem de fundo mais escura */
         body::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.55); /* Escurece a imagem de fundo */
+            background: rgba(0, 0, 0, 0.55);
             z-index: -1;
         }
 
@@ -98,10 +109,9 @@
             font-family: 'Courier New', monospace;
             font-weight: bold;
             display: inline-block;
-            margin: 0px 0;
+            margin: 10px 0;
         }
 
-        /* Textarea dentro das dimensões do container */
         #json-input {
             width: 100%;
             max-width: 100%;
@@ -237,6 +247,7 @@
             background: #ff855a;
         }
 
+        /* JSON Output hidden by default */
         #json-output {
             width: 100%;
             max-width: 100%;
@@ -251,12 +262,16 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             overflow-x: auto;
             backdrop-filter: blur(8px);
+            display: none; /* Hidden initially */
+        }
+
+        #json-output.visible {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Selector de idioma -->
         <div class="language-switcher">
             <span class="lang-btn active" id="flag-br" title="Português">🇧🇷</span>
             <span class="lang-btn" id="flag-us" title="English">🇺🇸</span>
@@ -273,7 +288,6 @@
             4. Dentro de PlayerData, haverá uma pasta com o seu <strong>SteamID</strong> (um número longo, ex: 7656119xxxxxxxxxx).<br>
             5. Abra essa pasta e copie o conteúdo do arquivo <strong>Profile.json</strong>.</p>
             <p><strong>Windows + R</strong>:</p><div class="path">%localappdata%\Icarus\Saved\PlayerData\</div>
-            <!--p id="tutorial-tip"><strong>Dica:</strong> Faça um backup do arquivo antes de editar!</p-->
         </div>
 
         <textarea id="json-input" placeholder="Cole aqui o conteúdo completo do seu Profile.json"></textarea>
@@ -292,6 +306,7 @@
         // === TRADUÇÕES ===
         const translations = {
             pt: {
+                pageTitle: "Icarus Editor de Moedas",
                 title: "Icarus Editor",
                 info: "Modifique suas moedas do jogo. Simples e fácil.",
                 tutorialTitle: "Como encontrar o seu Profile.json",
@@ -300,7 +315,6 @@
                               "3. Navegue até a pasta: <strong>Icarus → Saved → PlayerData</strong><br>" +
                               "4. Dentro de PlayerData, haverá uma pasta com o seu <strong>SteamID</strong> (um número longo, ex: 7656119xxxxxxxxxx).<br>" +
                               "5. Abra essa pasta e copie o conteúdo do arquivo <strong>Profile.json</strong>.",
-                tutorialTip: "<strong>Dica:</strong> Faça um backup do arquivo antes de editar!",
                 placeholder: "Cole aqui o conteúdo completo do seu Profile.json",
                 btnUpdate: "Atualizar JSON",
                 btnDownload: "Baixar Profile.json",
@@ -309,6 +323,7 @@
                 jsonUpdated: "JSON atualizado com sucesso!"
             },
             en: {
+                pageTitle: "Icarus Currency Editor",
                 title: "Icarus Editor",
                 info: "Modify your in-game currency. Simple and easy.",
                 tutorialTitle: "How to find your Profile.json",
@@ -317,7 +332,6 @@
                               "3. Navigate to the folder: <strong>Icarus → Saved → PlayerData</strong><br>" +
                               "4. Inside PlayerData, there will be a folder with your <strong>SteamID</strong> (a long number, e.g.: 7656119xxxxxxxxxx).<br>" +
                               "5. Open that folder and copy the contents of the <strong>Profile.json</strong> file.",
-                tutorialTip: "<strong>Tip:</strong> Make a backup of the file before editing!",
                 placeholder: "Paste here the full content of your Profile.json",
                 btnUpdate: "Update JSON",
                 btnDownload: "Download Profile.json",
@@ -327,7 +341,6 @@
             }
         };
 
-        // Ícones
         const icons = {
             "Credits":      "icons/Credits.png",
             "Refund":       "icons/Refund.png",
@@ -337,7 +350,6 @@
             "Licence":      "icons/Licence.png"
         };
 
-        // Nomes dos recursos
         const resourceNames = {
             pt: {
                 "Credits":      "Créditos",
@@ -372,6 +384,14 @@
             currentLang = lang;
             const t = translations[lang];
 
+            // Update page title and SEO
+            document.getElementById('page-title').textContent = t.pageTitle;
+            document.querySelector('meta[name="description"]').setAttribute('content', 
+                lang === 'en' 
+                    ? "Free offline editor for Icarus game currencies and resources. Easily modify Credits, Exotics, Biomass and more in your Profile.json file. Safe and simple tool."
+                    : "Editor offline gratuito para moedas e recursos do jogo Icarus. Modifique facilmente Créditos, Exóticas, Biomassa e mais no seu Profile.json. Ferramenta segura e simples."
+            );
+
             document.getElementById('flag-br').classList.toggle('active', lang === 'pt');
             document.getElementById('flag-us').classList.toggle('active', lang === 'en');
 
@@ -379,7 +399,6 @@
             document.getElementById('info').innerHTML = t.info;
             document.getElementById('tutorial-title').textContent = t.tutorialTitle;
             document.getElementById('tutorial-text').innerHTML = t.tutorialText;
-            //document.getElementById('tutorial-tip').innerHTML = t.tutorialTip;
             document.getElementById('json-input').placeholder = t.placeholder;
             document.getElementById('btn-update').textContent = t.btnUpdate;
             document.getElementById('btn-download').textContent = t.btnDownload;
@@ -418,6 +437,7 @@
             if (!text) {
                 profileData = null;
                 document.getElementById('resource-list').innerHTML = '';
+                document.getElementById('json-output').classList.remove('visible');
                 return;
             }
 
@@ -425,11 +445,13 @@
                 profileData = JSON.parse(text);
                 ensureAllResources();
                 renderResources();
+                document.getElementById('json-output').classList.remove('visible');
             } catch (e) {
                 profileData = null;
                 const t = translations[currentLang];
                 document.getElementById('resource-list').innerHTML = 
                     `<p style="color:#ff4444; text-align:center; grid-column: 1 / -1;">${t.invalidJson}</p>`;
+                document.getElementById('json-output').classList.remove('visible');
             }
         });
 
@@ -478,14 +500,16 @@
             });
 
             const output = JSON.stringify(profileData, null, 4);
-            document.getElementById('json-output').textContent = output;
+            const jsonOutput = document.getElementById('json-output');
+            jsonOutput.textContent = output;
+            jsonOutput.classList.add('visible'); // Show only after clicking "Update"
 
-            const t = translations[currentLang];
-            //alert(t.jsonUpdated);
+            // Optional: scroll smoothly to output
+            jsonOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function downloadJson() {
-            updateJson();
+            updateJson(); // Ensures latest values are applied
             if (!profileData) return;
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profileData, null, 4));
